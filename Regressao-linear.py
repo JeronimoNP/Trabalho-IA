@@ -25,44 +25,54 @@ print("\n")
 print("Value Counts - Horas de Estudo:\n", df['Hours Studied'].value_counts(), "\n")
 print("Value Counts - Notas:\n", df['Performance Index'].value_counts(), "\n")
 
-# Garantir mesmo tamanho
-# n = len(horas_estudo) # n será definido a partir do DataFrame
 n = len(df)
 
-# Cálculo da regressão
-media_x = sum(horas_estudo) / n
-media_y = sum(notas) / n
+# Inicialização dos coeficientes
+m = 0
+b = 0
 
-numerador_m = sum((horas_estudo[i] - media_x) * (notas[i] - media_y) for i in range(n))
-denominador_m = sum((horas_estudo[i] - media_x)**2 for i in range(n))
+# Hiperparâmetros
+learning_rate = 0.01
+epochs = 1000
 
-m = numerador_m / denominador_m
-b = media_y - m * media_x
+# Gradiente descendente
+for epoch in range(epochs):
+    erro_total = 0
+    dm = 0
+    db = 0
 
-print(f"Coeficiente Angular (m): {m:.2f}")
-print(f"Intercepto Linear (b): {b:.2f}")
-print(f"Equação: Nota = {m:.2f} * Horas_Estudo + {b:.2f}\n");
+    for x, y in zip(horas_estudo, notas):
+        y_pred = m * x + b
+        erro = y - y_pred
+        erro_total += erro ** 2
+        dm += -2 * x * erro
+        db += -2 * erro
 
-# Previsões
-# horas_para_prever = 7.5
-horas_para_prever = input("\nDigite um valor horas para prever a nota!\n->")
-horas_para_prever = float(horas_para_prever)
-#Calculo de previsão onde m coeficiente angular * horas_prever + b que e o intercepto linear
+    m -= learning_rate * (dm / n)
+    b -= learning_rate * (db / n)
+
+    if epoch % 100 == 0:
+        print(f'Época {epoch}: Erro médio quadrático = {erro_total / n:.4f}')
+
+# Resultado da regressão
+print(f"\nCoeficiente Angular (m): {m:.4f}")
+print(f"Intercepto Linear (b): {b:.4f}")
+print(f"Equação: Nota = {m:.4f} * Horas_Estudo + {b:.4f}\n")
+
+# Previsão
+horas_para_prever = float(input("\nDigite um valor horas para prever a nota!\n-> "))
 nota_prevista = m * horas_para_prever + b
 print(f"Para {horas_para_prever} horas de estudo, nota prevista: {nota_prevista:.2f}")
 
 notas_previstas = [m * x + b for x in horas_estudo]
 
-# Métricas calculadas manualmente
-# MSE, RMSE, MAE, R²
+# Métricas
 soma_erro_quadrado = sum((notas[i] - notas_previstas[i])**2 for i in range(n))
 mse = soma_erro_quadrado / n
 rmse = math.sqrt(mse)
-
 soma_erro_absoluto = sum(abs(notas[i] - notas_previstas[i]) for i in range(n))
 mae = soma_erro_absoluto / n
-
-# R² = 1 - (SSE / SST)
+media_y = sum(notas) / n
 soma_total = sum((notas[i] - media_y)**2 for i in range(n))
 r2 = 1 - (soma_erro_quadrado / soma_total)
 
@@ -71,18 +81,18 @@ print(f"RMSE: {rmse:.2f}")
 print(f"MAE: {mae:.2f}")
 print(f"R²: {r2:.4f}")
 
-# Gráfico 1: Reta de regressão
+# Gráficos
 plt.figure(figsize=(10, 6))
 plt.scatter(horas_estudo, notas, color='blue', label='Dados Originais')
 plt.plot(horas_estudo, notas_previstas, color='red', label=f'Regressão (y={m:.2f}x + {b:.2f})')
 plt.xlabel('Horas de Estudo')
 plt.ylabel('Nota')
-plt.title('Regressão Linear Simples: Nota vs Horas de Estudo')
+plt.title('Regressão Linear com Gradiente Descendente')
 plt.legend()
 plt.grid(True) 
 plt.show()
 
-# Gráfico 2: Resíduos
+# Gráfico de resíduos
 residuos = [notas[i] - notas_previstas[i] for i in range(n)]
 
 plt.figure(figsize=(10, 6))
@@ -94,14 +104,12 @@ plt.title('Resíduos da Regressão Linear')
 plt.grid(True)
 plt.show()
 
-# Gráfico 3: Distribuição dos Resíduos
+# Distribuição dos resíduos
 plt.figure(figsize=(10, 6))
-# Removido bins=5 para permitir que o seaborn escolha o número de bins
 sns.histplot(residuos, kde=True, color='green')
-# Adiciona uma linha vertical em x=0 para referência
 plt.axvline(x=0, color='red', linestyle='--', linewidth=2, label='Zero (Ideal)')
 plt.xlabel('Resíduo')
 plt.title('Distribuição dos Resíduos')
-plt.legend() # Adicionado para mostrar o label da linha vertical
+plt.legend()
 plt.grid(True)
 plt.show()
