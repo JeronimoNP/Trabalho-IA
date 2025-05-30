@@ -5,7 +5,7 @@ import seaborn as sns
 
 # Carregar dados do arquivo XLSX
 try:
-    df = pd.read_excel('dados_estudo.xlsx') 
+    df = pd.read_excel('study_data.xlsx') 
     horas_estudo = df['Hours Studied'].tolist() 
     notas = df['Performance Index'].tolist() 
 except FileNotFoundError:
@@ -96,8 +96,12 @@ plt.show()
 
 # Gráfico 3: Distribuição dos Resíduos
 plt.figure(figsize=(10, 6))
-sns.histplot(residuos, kde=True, color='green', bins=5)
+# Removido bins=5 para permitir que o seaborn escolha o número de bins
+sns.histplot(residuos, kde=True, color='green')
+# Adiciona uma linha vertical em x=0 para referência
+plt.axvline(x=0, color='red', linestyle='--', linewidth=2, label='Zero (Ideal)')
 plt.xlabel('Resíduo')
 plt.title('Distribuição dos Resíduos')
+plt.legend() # Adicionado para mostrar o label da linha vertical
 plt.grid(True)
 plt.show()
