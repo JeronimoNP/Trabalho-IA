@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 
 # 1 - Carregar os dados
 df = pd.read_excel('C:\\Users\\famil\\OneDrive\\Documentos\\Projetos\\Trabalho-IA\\RMA\\Pasta1.xlsx')
+
 # Converter a variável categórica para numérica
 df['Extracurricular Activities'] = df['Extracurricular Activities'].map({'Yes': 1, 'No': 0})
 
@@ -56,10 +57,7 @@ y_pred_prob = model.predict(X_test).ravel()  # Probabilidades
 y_pred = (y_pred_prob > 0.5).astype(int)      # Converte para 0 ou 1
 
 # ---- Previsão com valores fixos no código ----
-
-# Valores de entrada numero 9142:
-# [Horas Estudadas, Pontuação Anterior, Atividade Extracurricular, Horas de Sono, Número de Questões Praticadas]
-
+# Exemplo de entrada manual para teste
 nova_entrada = pd.DataFrame([[9, 96, 0, 8, 3]], columns=[
     'Hours Studied',
     'Previous Scores',
@@ -78,7 +76,6 @@ classe_prevista = 1 if probabilidade >= 0.5 else 0
 print(f"Probabilidade de passar: {probabilidade * 100:.2f}%")
 print(f"Previsão: {'Passou' if classe_prevista == 1 else 'Não passou'}")
 
-
 # 11 - Matriz de Confusão
 print("\nMatriz de Confusão:")
 print(confusion_matrix(y_test, y_pred))
@@ -86,6 +83,26 @@ print(confusion_matrix(y_test, y_pred))
 # 12 - Relatório de Classificação: Precisão, Recall, F1, etc
 print("\nRelatório de Classificação:")
 print(classification_report(y_test, y_pred))
+
+# 12.1 - Gráfico Real vs Previsto (Mostrando Acertos e Erros)
+num_amostras = 50  # Quantidade de amostras que vamos exibir (pode aumentar se quiser)
+real = y_test.reset_index(drop=True)[:num_amostras]
+previsto = pd.Series(y_pred[:num_amostras])
+
+plt.figure(figsize=(12, 6))
+bar_width = 0.35
+index = np.arange(num_amostras)
+
+plt.bar(index, real, bar_width, label='Real', color='green')
+plt.bar(index + bar_width, previsto, bar_width, label='Previsto', color='red')
+
+plt.xlabel('Amostras')
+plt.ylabel('Classe (0 = Não Passou, 1 = Passou)')
+plt.title('Comparação: Real vs Previsto (Amostras de Teste)')
+plt.xticks(index + bar_width / 2, index)
+plt.legend()
+plt.tight_layout()
+plt.show()
 
 # 13 - Curva ROC e AUC
 fpr, tpr, thresholds = roc_curve(y_test, y_pred_prob)
