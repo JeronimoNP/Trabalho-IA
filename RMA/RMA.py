@@ -1,13 +1,17 @@
+# Calculo base e manipulação de dados
 import pandas as pd
 import numpy as np
+# Visualização de dados
 import seaborn as sns
+import matplotlib.pyplot as plt
+# RMA
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import classification_report, confusion_matrix, roc_curve, auc
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
-import matplotlib.pyplot as plt
+
 
 # Carregar os dados
 df = pd.read_excel('C:\\Users\\famil\\OneDrive\\Documentos\\Projetos\\Trabalho-IA\\RMA\\Pasta1.xlsx')
@@ -49,7 +53,7 @@ model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy']
 history = model.fit(
     X_train,
     y_train,
-    epochs=100,
+    epochs=50,
     batch_size=16,
     validation_data=(X_val, y_val),
     verbose=1
