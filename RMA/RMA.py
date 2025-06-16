@@ -12,6 +12,13 @@ import matplotlib.pyplot as plt
 # Carregar os dados
 df = pd.read_excel('C:\\Users\\famil\\OneDrive\\Documentos\\Projetos\\Trabalho-IA\\RMA\\Pasta1.xlsx')
 
+# Tratamento de valores ausentes
+for coluna in df.columns:
+    if df[coluna].dtype in [np.float64, np.int64]:
+        df[coluna].fillna(df[coluna].mean(), inplace=True)
+    else:
+        df[coluna].fillna(df[coluna].mode()[0], inplace=True)
+
 # Converter a variável categórica para numérica
 df['Extracurricular Activities'] = df['Extracurricular Activities'].map({'Yes': 1, 'No': 0})
 
@@ -78,6 +85,14 @@ print(f"Previsão: {'Passou' if classe_prevista == 1 else 'Não passou'}")
 print("\nInformações sobre o dataset:")
 print(f"Quantidade total de dados: {len(df)}")
 print(f"Número de variáveis de entrada: {X.shape[1]}")
+
+# Análise exploratória
+print('\nPrimeiras linhas do dataset:')
+print(df.head())
+print('\nInformações do dataset:')
+df.info()
+print('\nEstatísticas descritivas:')
+print(df.describe())
 
 # Matriz de Confusão
 print("\nMatriz de Confusão:")
