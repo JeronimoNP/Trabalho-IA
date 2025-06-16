@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import seaborn as sns
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import classification_report, confusion_matrix, roc_curve, auc
@@ -7,10 +8,6 @@ import tensorflow as tf
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
 import matplotlib.pyplot as plt
-
-print(tf.config.list_physical_devices('GPU'))  # Verifica se há GPU disponível
-# Verifica se o TensorFlow está usando a GPU    
-print("TensorFlow versão:", tf.__version__)
 
 # 1 - Carregar os dados
 df = pd.read_excel('C:\\Users\\famil\\OneDrive\\Documentos\\Projetos\\Trabalho-IA\\RMA\\Pasta1.xlsx')
@@ -38,7 +35,7 @@ model = Sequential()
 model.add(Dense(8, activation='relu', input_shape=(X.shape[1],)))
 model.add(Dense(4, activation='relu'))
 model.add(Dense(1, activation='sigmoid'))
-
+print(f"Número de variáveis de entrada: {X.shape[1]}")
 # 8 - Compilar o modelo
 model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
@@ -82,6 +79,25 @@ print(f"Previsão: {'Passou' if classe_prevista == 1 else 'Não passou'}")
 print("\nMatriz de Confusão:")
 print(confusion_matrix(y_test, y_pred))
 
+# Calcula a matriz de confusão
+cm = confusion_matrix(y_test, y_pred)
+
+# Cria a figura do gráfico
+plt.figure(figsize=(8, 6))
+
+# Cria o heatmap
+sns.heatmap(cm, annot=True, fmt='d', cmap='Blues',
+            xticklabels=['Não Passou (Prev)', 'Passou (Prev)'],
+            yticklabels=['Não Passou (Real)', 'Passou (Real)'])
+
+# Adiciona os títulos e legendas
+plt.title('Matriz de Confusão', fontsize=16)
+plt.ylabel('Classe Real', fontsize=12)
+plt.xlabel('Classe Prevista', fontsize=12)
+
+# Mostra o gráfico
+plt.show()
+
 # 14 - Relatório de Classificação (Precisão, Recall, F1-Score, etc)
 print("\nRelatório de Classificação:")
 print(classification_report(y_test, y_pred))
@@ -114,8 +130,6 @@ plt.legend()
 plt.show()
 
 # 18 - Comparação Acertos vs Erros nas primeiras 100 amostras de teste
-
-# Limitar para as primeiras 100 amostras (ou menos se tiver menos de 100 no teste)
 num_amostras = min(100, len(y_test))
 y_real = np.array(y_test)[:num_amostras]
 y_prev = y_pred[:num_amostras]
@@ -130,8 +144,6 @@ for idx in range(num_amostras):
         # Acerto → Ponto verde
         plt.scatter(idx, real, color='green', label='Acerto' if idx == 0 else "")
     else:
-        # Erro → Dois pontos: vermelho (real), azul (previsto)
-        # plt.scatter(idx, real, color='red', label='Real (Erro)' if idx == 0 else "")
         plt.scatter(idx, prev, color='red', label='Previsto (Erro)' if idx == 0 else "")
 
 plt.title('Acertos e Erros nas Primeiras 100 Amostras de Teste')
