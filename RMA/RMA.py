@@ -9,37 +9,36 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
 import matplotlib.pyplot as plt
 
-# 1 - Carregar os dados
+# Carregar os dados
 df = pd.read_excel('C:\\Users\\famil\\OneDrive\\Documentos\\Projetos\\Trabalho-IA\\RMA\\Pasta1.xlsx')
 
-# 2 - Converter a variável categórica para numérica
+# Converter a variável categórica para numérica
 df['Extracurricular Activities'] = df['Extracurricular Activities'].map({'Yes': 1, 'No': 0})
 
-# 3 - Criar variável alvo binária (Exemplo: aprovado se >= 600 pontos)
+# Criar variável alvo binária (Exemplo: aprovado se >= 600 pontos)
 df['Aprovado'] = df['Performance Index'].apply(lambda x: 1 if x >= 600 else 0)
 
-# 4 - Separar X e y
+# Separar X e y
 X = df.drop(['Performance Index', 'Aprovado'], axis=1)
 y = df['Aprovado']
 
-# 5 - Normalizar os dados
+# Normalizar os dados
 scaler = StandardScaler()
 X = scaler.fit_transform(X)
 
-# 6 - Dividir os dados: 70% treino, 10% validação, 20% teste
+# Dividir os dados: 70% treino, 10% validação, 20% teste
 X_train, X_temp, y_train, y_temp = train_test_split(X, y, test_size=0.3, random_state=42, stratify=y)
 X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=2/3, random_state=42, stratify=y_temp)
 
-# 7 - Criar o modelo (Rede Neural)
+# Criar o modelo (Rede Neural)
 model = Sequential()
 model.add(Dense(8, activation='relu', input_shape=(X.shape[1],)))
 model.add(Dense(4, activation='relu'))
 model.add(Dense(1, activation='sigmoid'))
-print(f"Número de variáveis de entrada: {X.shape[1]}")
-# 8 - Compilar o modelo
+# Compilar o modelo
 model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
-# 9 - Treinar com validação
+# Treinar com validação
 history = model.fit(
     X_train,
     y_train,
@@ -49,15 +48,15 @@ history = model.fit(
     verbose=1
 )
 
-# 10 - Avaliar o modelo no conjunto de teste
+# Avaliar o modelo no conjunto de teste
 loss, accuracy = model.evaluate(X_test, y_test, verbose=0)
 print(f'\nAcurácia no Teste: {accuracy:.4f}')
 
-# 11 - Fazer as previsões no conjunto de teste
+# Fazer as previsões no conjunto de teste
 y_pred_prob = model.predict(X_test).ravel()                    # Probabilidades
 y_pred = (y_pred_prob > 0.5).astype(int)                      # Converte para 0 ou 1
 
-# 12 - Previsão para um caso específico (exemplo de entrada)
+# Previsão para um caso específico (exemplo de entrada)
 nova_entrada = pd.DataFrame([[9, 96, 0, 8, 3]], columns=[
     'Hours Studied',
     'Previous Scores',
@@ -75,7 +74,12 @@ classe_prevista = 1 if probabilidade >= 0.5 else 0
 print(f"\nProbabilidade de passar: {probabilidade * 100:.2f}%")
 print(f"Previsão: {'Passou' if classe_prevista == 1 else 'Não passou'}")
 
-# 13 - Matriz de Confusão
+# Informações sobre o dataset
+print("\nInformações sobre o dataset:")
+print(f"Quantidade total de dados: {len(df)}")
+print(f"Número de variáveis de entrada: {X.shape[1]}")
+
+# Matriz de Confusão
 print("\nMatriz de Confusão:")
 print(confusion_matrix(y_test, y_pred))
 
@@ -98,16 +102,16 @@ plt.xlabel('Classe Prevista', fontsize=12)
 # Mostra o gráfico
 plt.show()
 
-# 14 - Relatório de Classificação (Precisão, Recall, F1-Score, etc)
+# Relatório de Classificação (Precisão, Recall, F1-Score, etc)
 print("\nRelatório de Classificação:")
 print(classification_report(y_test, y_pred))
 
-# 15 - Curva ROC e AUC
+# Curva ROC e AUC
 fpr, tpr, thresholds = roc_curve(y_test, y_pred_prob)
 roc_auc = auc(fpr, tpr)
 print(f"\nAUC-ROC: {roc_auc:.4f}")
 
-# 16 - Plot da Curva ROC
+# Plot da Curva ROC
 plt.figure(figsize=(8, 6))
 plt.plot(fpr, tpr, color='darkorange', lw=2, label=f'ROC curve (area = {roc_auc:.2f})')
 plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
@@ -119,7 +123,7 @@ plt.title('Curva ROC')
 plt.legend(loc="lower right")
 plt.show()
 
-# 17 - Plot da Perda (Loss) durante o treinamento
+# Plot da Perda (Loss) durante o treinamento
 plt.figure(figsize=(8, 5))
 plt.plot(history.history['loss'], label='Treino')
 plt.plot(history.history['val_loss'], label='Validação')
@@ -129,7 +133,7 @@ plt.ylabel('Loss')
 plt.legend()
 plt.show()
 
-# 18 - Comparação Acertos vs Erros nas primeiras 100 amostras de teste
+# Comparação Acertos vs Erros nas primeiras 100 amostras de teste
 num_amostras = min(100, len(y_test))
 y_real = np.array(y_test)[:num_amostras]
 y_prev = y_pred[:num_amostras]
