@@ -8,37 +8,41 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
 import matplotlib.pyplot as plt
 
+print(tf.config.list_physical_devices('GPU'))  # Verifica se há GPU disponível
+# Verifica se o TensorFlow está usando a GPU    
+print("TensorFlow versão:", tf.__version__)
+
 # 1 - Carregar os dados
 df = pd.read_excel('C:\\Users\\famil\\OneDrive\\Documentos\\Projetos\\Trabalho-IA\\RMA\\Pasta1.xlsx')
 
-# Converter a variável categórica para numérica
+# 2 - Converter a variável categórica para numérica
 df['Extracurricular Activities'] = df['Extracurricular Activities'].map({'Yes': 1, 'No': 0})
 
-# 2 - Criar variável alvo binária (exemplo: Aprovado >= 600 pontos)
+# 3 - Criar variável alvo binária (Exemplo: aprovado se >= 600 pontos)
 df['Aprovado'] = df['Performance Index'].apply(lambda x: 1 if x >= 600 else 0)
 
-# 3 - Separar X e y
+# 4 - Separar X e y
 X = df.drop(['Performance Index', 'Aprovado'], axis=1)
 y = df['Aprovado']
 
-# 4 - Normalizar
+# 5 - Normalizar os dados
 scaler = StandardScaler()
 X = scaler.fit_transform(X)
 
-# 5 - Divisão 70/10/20
+# 6 - Dividir os dados: 70% treino, 10% validação, 20% teste
 X_train, X_temp, y_train, y_temp = train_test_split(X, y, test_size=0.3, random_state=42, stratify=y)
 X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=2/3, random_state=42, stratify=y_temp)
 
-# 6 - Criar o modelo RMA (Rede Neural) com Keras
+# 7 - Criar o modelo (Rede Neural)
 model = Sequential()
 model.add(Dense(8, activation='relu', input_shape=(X.shape[1],)))
 model.add(Dense(4, activation='relu'))
 model.add(Dense(1, activation='sigmoid'))
 
-# 7 - Compilar o modelo
+# 8 - Compilar o modelo
 model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
-# 8 - Treinar com validação
+# 9 - Treinar com validação
 history = model.fit(
     X_train,
     y_train,
@@ -48,16 +52,15 @@ history = model.fit(
     verbose=1
 )
 
-# 9 - Avaliar no conjunto de teste
+# 10 - Avaliar o modelo no conjunto de teste
 loss, accuracy = model.evaluate(X_test, y_test, verbose=0)
 print(f'\nAcurácia no Teste: {accuracy:.4f}')
 
-# 10 - Previsões
-y_pred_prob = model.predict(X_test).ravel()  # Probabilidades
-y_pred = (y_pred_prob > 0.5).astype(int)      # Converte para 0 ou 1
+# 11 - Fazer as previsões no conjunto de teste
+y_pred_prob = model.predict(X_test).ravel()                    # Probabilidades
+y_pred = (y_pred_prob > 0.5).astype(int)                      # Converte para 0 ou 1
 
-# ---- Previsão com valores fixos no código ----
-# Exemplo de entrada manual para teste
+# 12 - Previsão para um caso específico (exemplo de entrada)
 nova_entrada = pd.DataFrame([[9, 96, 0, 8, 3]], columns=[
     'Hours Studied',
     'Previous Scores',
@@ -66,51 +69,30 @@ nova_entrada = pd.DataFrame([[9, 96, 0, 8, 3]], columns=[
     'Sample Question Papers Practiced'
 ])
 
-# Normalizar igual foi feito no treinamento
+# Normalizar a nova entrada igual ao treino
 nova_entrada = scaler.transform(nova_entrada)
 
 # Fazer a previsão
 probabilidade = model.predict(nova_entrada)[0][0]
 classe_prevista = 1 if probabilidade >= 0.5 else 0
-
-print(f"Probabilidade de passar: {probabilidade * 100:.2f}%")
+print(f"\nProbabilidade de passar: {probabilidade * 100:.2f}%")
 print(f"Previsão: {'Passou' if classe_prevista == 1 else 'Não passou'}")
 
-# 11 - Matriz de Confusão
+# 13 - Matriz de Confusão
 print("\nMatriz de Confusão:")
 print(confusion_matrix(y_test, y_pred))
 
-# 12 - Relatório de Classificação: Precisão, Recall, F1, etc
+# 14 - Relatório de Classificação (Precisão, Recall, F1-Score, etc)
 print("\nRelatório de Classificação:")
 print(classification_report(y_test, y_pred))
 
-# 12.1 - Gráfico Real vs Previsto (Mostrando Acertos e Erros)
-num_amostras = 50  # Quantidade de amostras que vamos exibir (pode aumentar se quiser)
-real = y_test.reset_index(drop=True)[:num_amostras]
-previsto = pd.Series(y_pred[:num_amostras])
-
-plt.figure(figsize=(12, 6))
-bar_width = 0.35
-index = np.arange(num_amostras)
-
-plt.bar(index, real, bar_width, label='Real', color='green')
-plt.bar(index + bar_width, previsto, bar_width, label='Previsto', color='red')
-
-plt.xlabel('Amostras')
-plt.ylabel('Classe (0 = Não Passou, 1 = Passou)')
-plt.title('Comparação: Real vs Previsto (Amostras de Teste)')
-plt.xticks(index + bar_width / 2, index)
-plt.legend()
-plt.tight_layout()
-plt.show()
-
-# 13 - Curva ROC e AUC
+# 15 - Curva ROC e AUC
 fpr, tpr, thresholds = roc_curve(y_test, y_pred_prob)
 roc_auc = auc(fpr, tpr)
 print(f"\nAUC-ROC: {roc_auc:.4f}")
 
-# 14 - Plot da Curva ROC
-plt.figure(figsize=(8,6))
+# 16 - Plot da Curva ROC
+plt.figure(figsize=(8, 6))
 plt.plot(fpr, tpr, color='darkorange', lw=2, label=f'ROC curve (area = {roc_auc:.2f})')
 plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
 plt.xlim([0.0, 1.0])
@@ -121,12 +103,39 @@ plt.title('Curva ROC')
 plt.legend(loc="lower right")
 plt.show()
 
-# 15 - Plot da Perda (Loss) durante o treinamento
-plt.figure(figsize=(8,5))
+# 17 - Plot da Perda (Loss) durante o treinamento
+plt.figure(figsize=(8, 5))
 plt.plot(history.history['loss'], label='Treino')
 plt.plot(history.history['val_loss'], label='Validação')
 plt.title('Perda durante o Treinamento')
 plt.xlabel('Época')
 plt.ylabel('Loss')
+plt.legend()
+plt.show()
+
+# 18 - Comparação Acertos vs Erros nas primeiras 100 amostras de teste
+
+# Limitar para as primeiras 100 amostras (ou menos se tiver menos de 100 no teste)
+num_amostras = min(100, len(y_test))
+y_real = np.array(y_test)[:num_amostras]
+y_prev = y_pred[:num_amostras]
+
+plt.figure(figsize=(12, 6))
+
+for idx in range(num_amostras):
+    real = y_real[idx]
+    prev = y_prev[idx]
+    
+    if real == prev:
+        # Acerto → Ponto verde
+        plt.scatter(idx, real, color='green', label='Acerto' if idx == 0 else "")
+    else:
+        # Erro → Dois pontos: vermelho (real), azul (previsto)
+        # plt.scatter(idx, real, color='red', label='Real (Erro)' if idx == 0 else "")
+        plt.scatter(idx, prev, color='red', label='Previsto (Erro)' if idx == 0 else "")
+
+plt.title('Acertos e Erros nas Primeiras 100 Amostras de Teste')
+plt.xlabel('Amostra')
+plt.ylabel('Classe (0 = Não Passou, 1 = Passou)')
 plt.legend()
 plt.show()
