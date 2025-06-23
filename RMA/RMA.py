@@ -9,8 +9,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import classification_report, confusion_matrix, roc_curve, auc
 import tensorflow as tf
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense
+from tensorflow.keras.models import Sequential # type: ignore
+from tensorflow.keras.layers import Dense # type: ignore
 
 
 # Carregar os dados
@@ -29,7 +29,7 @@ df['Extracurricular Activities'] = df['Extracurricular Activities'].map({'Yes': 
 # Criar variável alvo binária (Exemplo: aprovado se >= 600 pontos)
 df['Aprovado'] = df['Performance Index'].apply(lambda x: 1 if x >= 600 else 0)
 
-# Separar X e y
+# Separar X e Y
 X = df.drop(['Performance Index', 'Aprovado'], axis=1)
 y = df['Aprovado']
 
@@ -99,11 +99,10 @@ print('\nEstatísticas descritivas:')
 print(df.describe())
 
 # Matriz de Confusão
+cm = confusion_matrix(y_test, y_pred)
 print("\nMatriz de Confusão:")
 print(confusion_matrix(y_test, y_pred))
 
-# Calcula a matriz de confusão
-cm = confusion_matrix(y_test, y_pred)
 
 # Cria a figura do gráfico
 plt.figure(figsize=(8, 6))
